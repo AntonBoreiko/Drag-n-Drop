@@ -1,0 +1,28 @@
+.elem {
+  background-color: #fff;
+  box-shadow: 20px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+}
+.dnd {
+  // position: relative;
+  // display: none;
+  // position: fixed;
+  // left: 200px;
+  // top: 300px;
+}
+
+// .card_edit {
+//   display: block;
+// }
+
+.wrapper {
+  background: url(../img/bg.jpg) no-repeat;
+  background-size: cover;
+  min-width: 100vh;
+  min-height: 100vh;
+  padding: 60px;
+}
