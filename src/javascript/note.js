@@ -1,153 +1,48 @@
-import { DnD } from "./dnd"
+import { DnD } from './dnd'
 
-
-
-export class Note {
+class Note {
   data = JSON.parse(localStorage.getItem('data')) || []
   editNoteClass = 'card_edit'
   DnD = DnD
-  // bg = '#ff0000'
 
-  constructor(wrapElement = null) {
-    this.wrapElement = document.querySelector('#wrapSector') || document.body
-    // || document.body
-    console.log(this.wrapElement)
-    this.buttonElement = document.querySelector('#btn')
-    // this.element = document.querySelector('#element')
-
-
-    this.bgElement = document.querySelector('#bg')
-    this.bg = this.bgElement.value
-    console.log(this.bg)
-
+  constructor(wrapSector = null, buttonSelector = null) {
+    this.wrapElement = document.querySelector(wrapSector) || document.body
+    this.buttonElement = document.querySelector(buttonSelector)
+    this.bg = document.querySelector('#color')
 
     this._init()
   }
 
   _init() {
-    this.buttonElement.addEventListener('click', this._handleClickButton.bind(this))
-
-    document.addEventListener('dbclick', this._handleDobleClick.bind(this))
-
-    window.addEventListener('beforeunload', this._handleBeforeunload.bind(this))
-
+    this.buttonElement.addEventListener('click', this._handleClickButtonCreateNote.bind(this))
+    document.addEventListener('dblclick', this._handleDoubleClick.bind(this))
     document.addEventListener('click', this._handleClickButtonSubmit.bind(this))
+    window.addEventListener('beforeunload', this._handleBeforeUnload.bind(this))
 
-
-    this._render()
-  }
-
-  _createNote() {
-    const noteData = {
-      id: new Date().getTime(),
-      content: 'hy',
-      bg: this.bg,
-      position: {
-        left: 'auto',
-        top: 'auto',
-      }
-    }
-
-    console.log(noteData)
-    this.data.push(noteData)
-
+    this.render()
   }
 
 
-  _template(noteData) {
-    const { id, content, position, bg } = noteData
-    // console.log(noteData)
-    const dndWrapElement = document.createElement('div')
-
-    console.log(position)
-    this._setPosition(position, dndWrapElement)
-
-    dndWrapElement.classList.add('dnd')
-    // this.wrapElement = new Dnd(dndWrapElement)
-    new this.DnD(dndWrapElement)
-
-
-    dndWrapElement.addEventListener('dnd:end', (event) => {
-      const { position } = event.detail
-
-      const index = this._getIndexSelectorNote(id)
-
-
-      this.data[index].position = position
-      // console.log(this.data[index].position)
-      this._setPosition(position, dndWrapElement)
-      // console.log(this.data)
-    })
-    dndWrapElement.addEventListener('click', this._handleClickClose.bind(this))
-
-
-    //
-    // const bg = this.bg.value
-    //
-    const template = `
-    <div data-id="${id}" style="background: ${bg}; max-width: 16rem; box-shadow: 10px 5px 5px #000;"
-        class="card text-white  mb-3"  >
-        <div class="card-header">
-          <h3>Записка</h3>
-          <button class="btn btn-light card__close">❌</button>
-
-        </div>
-        <form class="card__form mt-2">
-          <textarea class="w-100" rows="4">${content}</textarea>
-          <button type="submit" class="btn btn-sm btn-success
-          submit-form">
-          Сохранить
-          </button>
-        </form>
-    </div>
-    `
-    dndWrapElement.innerHTML = template
-    // console.log(dndElement)
-    return dndWrapElement
-
+  _handleBeforeUnload() {
+    localStorage.setItem('data', JSON.stringify(this.data))
   }
 
-
-  _getIndexSelectorNote(id) {
-    let index = 0
-
-    this.data.forEach((item, i) => {
-      if (item.id == id) {
-        index = i
-      }
-    })
-
-    return index
+  _handleClickButtonCreateNote() {
+    this._createNote()
+    this.render()
   }
 
-  _handleDobleClick(event) {
+  _handleDoubleClick(event) {
     const { target } = event
     const cardElement = target.closest('.card')
 
     if (cardElement) {
-      cardElement.classList.add('.editNoteClass')
-
+      cardElement.classList.add(this.editNoteClass)
     }
   }
 
-
-  _handleClickButton() {
-    // console.log('gfgd')
-    this._createNote()
-
-
-    this._render()
-    // this._createNote()
-  }
-
-  _handleBeforeunload() {
-    localStorage.setItem('data', JSON.stringify(this.data))
-
-    // console.log(this.data)
-  }
-
   _handleClickButtonSubmit(event) {
-    event.preventDefault()
+    // event.preventDefault()
     const { target } = event
 
     if (target.classList.value.includes('submit-form')) {
@@ -155,12 +50,10 @@ export class Note {
       const cardElement = target.closest('.card')
 
       const { id } = cardElement.dataset
-      const index = this._getIndexSelectorNote(id)
+      const index = this._getIndexSelectedNote(id)
       this.data[index].content = textareaElement.value
 
-
-      this._handleBeforeunload()
-      // this._render(this.data)
+      this.render()
     }
   }
 
@@ -172,13 +65,73 @@ export class Note {
       const cardElement = target.closest('.card')
 
       const { id } = cardElement.dataset
-      const index = this._getIndexSelectorNote(id)
+      const index = this._getIndexSelectedNote(id)
       this.data.splice(index, 1)
 
-
-      this._handleBeforeunload()
-      this._render(this.data)
+      this.render()
     }
+  }
+
+
+  _createNote() {
+    const noteData = {
+      id: new Date().getTime(),
+      content: 'двойной клик',
+      color: color.value,
+      position: {
+        left: 'auto',
+        top: 'auto'
+      }
+    }
+
+    this.data.push(noteData)
+  }
+
+
+  _buildNoteElement(noteData) {
+    const { id, content, position, color } = noteData
+    const dndWrapElement = document.createElement('div')
+
+    this._setPosition(position, dndWrapElement) // 1. устанавливаем позицию
+    dndWrapElement.classList.add('dnd')
+    new this.DnD(dndWrapElement) // 2. передаем элемент с его сохраненной позицией
+
+    dndWrapElement.addEventListener('dnd:end', (event) => {
+      const { position } = event.detail
+      const index = this._getIndexSelectedNote(id)
+
+      this.data[index].position = position
+      this._setPosition(position, dndWrapElement)
+    })
+
+    dndWrapElement.addEventListener('click', this._handleClickClose.bind(this))
+
+    const template = `
+      <div data-id="${id}" class="card border-primary mb-3" style="max-width: 18rem; background-color: ${color}; cursor:pointer;">
+      <button type="button" class="card__close btn-warning">❌</button>
+        <h5 class="card-header">Записка</h5>
+        <form class="card__form mt-2">
+          <textarea class="w-100" rows="3">${content}</textarea>
+          <button type="submit" class="btn btn-sm btn-success submit-form">Save</button>
+        </form>
+        <div class="card__content">${content}</div>
+    </div>
+    `
+    dndWrapElement.innerHTML = template
+
+    return dndWrapElement
+  }
+
+  _getIndexSelectedNote(id) {
+    let index = 0
+
+    this.data.forEach((item, i) => {
+      if (item.id == id) {
+        index = i
+      }
+    })
+
+    return index
   }
 
   _setPosition({ left, top }, element) {
@@ -186,18 +139,14 @@ export class Note {
     element.style.top = top
   }
 
-  _render() {
-    // const wrapElement = document.querySelector('wrapSector')
-    // console.log(this.wrapElement)
+  render() {
     this.wrapElement.innerHTML = ''
 
     this.data.forEach((item) => {
-      // console.log(item.position)
-      // this._setPosition(item.position, this.wrapElement)
-
-      const noteElement = this._template(item)
+      const noteElement = this._buildNoteElement(item)
       this.wrapElement.append(noteElement)
     })
-
   }
 }
+
+export { Note }

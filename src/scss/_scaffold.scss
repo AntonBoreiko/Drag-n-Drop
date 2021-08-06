@@ -1,28 +1,64 @@
-.elem {
-  background-color: #fff;
-  box-shadow: 20px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-}
-.dnd {
-  // position: relative;
-  // display: none;
-  // position: fixed;
-  // left: 200px;
-  // top: 300px;
-}
-
-// .card_edit {
-//   display: block;
-// }
-
 .wrapper {
   background: url(../img/bg.jpg) no-repeat;
   background-size: cover;
   min-width: 100vh;
   min-height: 100vh;
-  padding: 60px;
+  padding: 30px;
+}
+
+$name: "card";
+
+.#{$name} {
+  position: relative;
+  width: 240px;
+  height: 200px;
+  padding: 8px;
+  border-width: 0;
+  overflow: hidden;
+  box-shadow: 0px 8px 21px 0px rgba(0, 0, 0, 0.55);
+
+  &_edit {
+    .#{$name}__form {
+      display: block;
+    }
+    .card__content {
+      display: none;
+    }
+  }
+
+  &__content {
+    user-select: none;
+    padding: 0px 16px;
+    color: #fff;
+  }
+  .card-header {
+    color: #fff;
+  }
+
+  &__form {
+    display: none;
+  }
+
+  &__close {
+    @extend .btn, .btn-secondary, .btn-sm;
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    width: 40px;
+    height: 40px;
+  }
+}
+#label {
+  color: #fff;
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+#color {
+  display: block;
+  width: 90px;
+  height: 20px;
+  cursor: pointer;
+}
+.dnd {
+  position: absolute;
 }

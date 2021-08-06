@@ -1,9 +1,4 @@
 export class DnD {
-  position = {
-    left: 'auto',
-    top: 'auto'
-  }
-
   shifts = {
     x: 0,
     y: 0
@@ -11,54 +6,64 @@ export class DnD {
 
   constructor(element) {
     this.element = element
+    this.position = {
+      left: this.element.style.left,
+      top: this.element.style.top
+    }
+
+    this.handleMousemove = this._handleMousemove.bind(this)
 
     this._init()
   }
 
   _init() {
-    this.handleMouseDown = this._handleMouseDown.bind(this)
-    this.handleMouseMove = this._handleMouseMove.bind(this)
-    this.handleMouseUp = this._handleMouseUp.bind(this)
-
-    this.element.classList.add('position-absolute')
-
-    this.element.addEventListener('mousedown', this.handleMouseDown)
-    document.addEventListener('mouseup', this.handleMouseUp)
+    this.element.addEventListener('mousedown', (event) => {
+      this._handleMousedown(event)
+    })
+    this.element.addEventListener('mouseup', this._handleMouseup.bind(this))
   }
 
-  _handleMouseDown({ clientX, clientY }) {
-    document.addEventListener('mousemove', this.handleMouseMove)
-    this._calcShifts(clientX, clientY)
-    this._setPosition(clientX, clientY)
+  _handleMousedown(event) {
+    const { clientX, clientY } = event
+    this._calcShifts({ clientX, clientY })
+
+    document.addEventListener('mousemove', this.handleMousemove)
   }
 
-  _handleMouseMove({ clientX, clientY }) {
-    this._setPosition(clientX, clientY)
+  _handleMousemove(event) {
+    const { clientX, clientY } = event
+
+    this._setPosition({ clientX, clientY })
   }
 
-  _handleMouseUp({ clientX, clientY }) {
-    document.removeEventListener('mousemove', this.handleMouseMove)
-    this._setPosition(clientX, clientY)
+  _handleMouseup() {
+    document.removeEventListener('mousemove', this.handleMousemove)
 
-    const event = new CustomEvent('dnd:end', {
+    const customEvent = new CustomEvent('dnd:end', {
       detail: { position: this.position }
     })
-
-    this.element.dispatchEvent(event)
+    this.element.dispatchEvent(customEvent)
   }
 
-  _calcShifts(x, y) {
+  _calcShifts(coords) {
+    const { clientX, clientY } = coords
     const rect = this.element.getBoundingClientRect()
 
-    this.shifts.x = x - rect.left
-    this.shifts.y = y - rect.top
+    this.shifts.x = clientX - rect.left
+    this.shifts.y = clientY - rect.top
   }
 
-  _setPosition(left, top) {
-    this.position.left = left - this.shifts.x
-    this.position.top = top - this.shifts.y
+  _setPosition(coords) {
+    const { clientX, clientY } = coords
+    const { x: shiftX, y: shiftY } = this.shifts
 
-    this.element.style.left = this.position.left + 'px'
-    this.element.style.top = this.position.top + 'px'
+    this.position = {
+      left: clientX - shiftX + 'px',
+      top: clientY - shiftY + 'px'
+    }
+
+    this.element.style.left = this.position.left
+    this.element.style.top = this.position.top
   }
 }
+
